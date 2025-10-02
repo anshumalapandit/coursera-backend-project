@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bookshop</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f9fa; margin: 0; }
+    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    h1 { text-align: center; color: #2c3e50; }
+    h2 { color: #34495e; margin-top: 32px; }
+    input, button, select { padding: 8px; margin: 4px 0; border-radius: 4px; border: 1px solid #ccc; }
+    button { background: #ee1409; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #dedb00; }
+    .book-list { list-style: none; padding: 0; }
+    .book-list li { margin: 12px 0; padding: 12px; background: #f0f4f8; border-radius: 6px; }
+    .review { background: #eaf6ff; margin: 6px 0; padding: 6px 12px; border-radius: 4px; }
+    .error { color: #c0392b; }
+    .success { color: #27ae60; }
+    .flex { display: flex; gap: 8px; align-items: center; }
+    .review-actions { margin-top: 8px; }
+    .section { margin-bottom: 32px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 Bookshop Assignment Demo</h1>
+
+    <!-- Task 1 -->
+    <div class="section">
+      <h2>Task 1: Get All Books</h2>
+      <button onclick="loadBooks()">Show All Books</button>
+      <ul id="book-list" class="book-list"></ul>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="section">
+      <h2>Task 2: Get Book by ISBN</h2>
+      <input id="search-isbn" placeholder="ISBN">
+      <button onclick="searchByISBN()">Search ISBN</button>
+      <ul id="isbn-result" class="book-list"></ul>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="section">
+      <h2>Task 3: Get Books by Author</h2>
+      <input id="search-author" placeholder="Author">
+      <button onclick="searchByAuthor()">Search Author</button>
+      <ul id="author-result" class="book-list"></ul>
+    </div>
+
+    <!-- Task 4 -->
+    <div class="section">
+      <h2>Task 4: Get Books by Title</h2>
+      <input id="search-title" placeholder="Title">
+      <button onclick="searchByTitle()">Search Title</button>
+      <ul id="title-result" class="book-list"></ul>
+    </div>
+
+    <!-- Task 5 -->
+    <div class="section">
+      <h2>Task 5: Get Book Review</h2>
+      <input id="review-isbn" placeholder="ISBN">
+      <button onclick="showReviewsForTask5()">Show Reviews</button>
+      <div id="task5-reviews"></div>
+    </div>
+
+    <!-- Task 6 -->
+    <div class="section">
+      <h2>Task 6: Register</h2>
+      <input id="register-username" placeholder="Username">
+      <input id="register-password" type="password" placeholder="Password">
+      <button onclick="register()">Register</button>
+      <div id="register-msg"></div>
+    </div>
+
+    <!-- Task 7 -->
+    <div class="section">
+      <h2>Task 7: Login</h2>
+      <input id="login-username" placeholder="Username">
+      <input id="login-password" type="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <div id="login-msg"></div>
+      <div id="logged-in-user" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- Task 8 -->
+    <div class="section">
+      <h2>Task 8: Add/Modify Review</h2>
+      <input id="review-book-isbn-8" placeholder="ISBN">
+      <textarea id="review-text-8" rows="2" style="width:90%;" placeholder="Your review"></textarea>
+      <button onclick="submitReviewForTask8()">Add/Modify Review</button>
+      <div id="review-action-msg-8"></div>
+    </div>
+
+    <!-- Task 9 -->
+    <div class="section">
+      <h2>Task 9: Delete My Review</h2>
+      <input id="review-book-isbn-9" placeholder="ISBN">
+      <button onclick="deleteReviewForTask9()">Delete My Review</button>
+      <div id="review-action-msg-9"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+
+    // Task 1
+    function loadBooks() {
+      fetch('/books')
+        .then(res => res.json())
+        .then(data => {
+          const ul = document.getElementById('book-list');
+          ul.innerHTML = data.map(book =>
+            `<li><b>${book.title}</b> by ${book.author} (ISBN: ${book.isbn})</li>`
+          ).join('');
+        });
+    }
+
+    // Task 2
+    function searchByISBN() {
+      const isbn = document.getElementById('search-isbn').value.trim();
+      if (!isbn) return;
+      fetch('/books/isbn/' + isbn)
+        .then(res => res.ok ? res.json() : Promise.reject("Not found"))
+        .then(book => {
+          const ul = document.getElementById('isbn-result');
+          ul.innerHTML = `<li><b>${book.title}</b> by ${book.author} (ISBN: ${book.isbn})</li>`;
+        })
+        .catch(() => {
+          document.getElementById('isbn-result').innerHTML = "<li>Book not found.</li>";
+        });
+    }
+
+    // Task 3
+    function searchByAuthor() {
+      const author = document.getElementById('search-author').value.trim();
+      if (!author) return;
+      fetch('/books/author/' + encodeURIComponent(author))
+        .then(res => res.json())
+        .then(books => {
+          const ul = document.getElementById('author-result');
+          ul.innerHTML = books.length
+            ? books.map(book =>
+                `<li><b>${book.title}</b> by ${book.author} (ISBN: ${book.isbn})</li>`
+              ).join('')
+            : "<li>No books found.</li>";
+        });
+    }
+
+    // Task 4
+    function searchByTitle() {
+      const title = document.getElementById('search-title').value.trim();
+      if (!title) return;
+      fetch('/books/title/' + encodeURIComponent(title))
+        .then(res => res.json())
+        .then(books => {
+          const ul = document.getElementById('title-result');
+          ul.innerHTML = books.length
+            ? books.map(book =>
+                `<li><b>${book.title}</b> by ${book.author} (ISBN: ${book.isbn})</li>`
+              ).join('')
+            : "<li>No books found.</li>";
+        });
+    }
+
+    // Task 5
+    function showReviewsForTask5() {
+      const isbn = document.getElementById('review-isbn').value.trim();
+      if (!isbn) return;
+      fetch(`/books/review/${isbn}`)
+        .then(res => res.ok ? res.json() : Promise.reject("Not found"))
+        .then(reviews => {
+          const div = document.getElementById('task5-reviews');
+          div.innerHTML = "<b>Reviews:</b>" + (
+            Object.keys(reviews).length
+              ? Object.entries(reviews).map(([user, review]) =>
+                  `<div class="review"><b>${user}:</b> ${review}</div>`
+                ).join("")
+              : "<div>No reviews yet.</div>"
+          );
+        })
+        .catch(() => {
+          document.getElementById('task5-reviews').innerHTML = "<div>Book not found.</div>";
+        });
+    }
+
+    // Task 6
+    function register() {
+      const username = document.getElementById('register-username').value.trim();
+      const password = document.getElementById('register-password').value;
+      fetch('/register', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({username, password})
+      })
+      .then(res => res.ok ? res.text() : res.text().then(t => Promise.reject(t)))
+      .then(msg => {
+        document.getElementById('register-msg').textContent = msg;
+      })
+      .catch(err => document.getElementById('register-msg').textContent = err);
+    }
+
+    // Task 7
+    function login() {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({username, password})
+      })
+      .then(res => res.ok ? res.text() : res.text().then(t => Promise.reject(t)))
+      .then(msg => {
+        currentUser = username;
+        document.getElementById('logged-in-user').textContent = "Logged in as: " + username;
+        document.getElementById('login-msg').textContent = msg;
+      })
+      .catch(err => document.getElementById('login-msg').textContent = err);
+    }
+
+    // Task 8
+    function submitReviewForTask8() {
+      const isbn = document.getElementById('review-book-isbn-8').value.trim();
+      const review = document.getElementById('review-text-8').value.trim();
+      if (!isbn || !review || !currentUser) {
+        document.getElementById('review-action-msg-8').textContent = "Enter ISBN, review, and login first!";
+        return;
+      }
+      fetch(`/review/${isbn}`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({username: currentUser, review})
+      })
+      .then(res => res.text())
+      .then(msg => {
+        document.getElementById('review-action-msg-8').textContent = msg;
+      });
+    }
+
+    // Task 9
+    function deleteReviewForTask9() {
+      const isbn = document.getElementById('review-book-isbn-9').value.trim();
+      if (!isbn || !currentUser) {
+        document.getElementById('review-action-msg-9').textContent = "Enter ISBN and login first!";
+        return;
+      }
+      fetch(`/review/${isbn}?username=${encodeURIComponent(currentUser)}`, { method: 'DELETE' })
+        .then(res => res.text())
+        .then(msg => {
+          document.getElementById('review-action-msg-9').textContent = msg;
+        });
+    }
+  </script>
+</body>
+</html>
