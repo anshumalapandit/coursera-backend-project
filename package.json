@@ -1,18 +1,23 @@
 {
   "name": "bookshop_project",
   "version": "1.0.0",
-  "description": "",
+  "description": "Coursera Backend Bookshop Project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test-methods": "node nodejs-methods.js",
+    "dev": "node index.js"
   },
-  "keywords": [],
+  "keywords": ["coursera", "backend", "bookshop"],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "axios": "^1.12.2",
+    "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
-    "express": "^5.1.0"
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
   }
 }
